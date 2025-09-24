@@ -1,0 +1,8 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "MEM2061_01_188_00_A")(type "KiCad")(uri "${KIPRJMOD}/MEM2061_01_188_00_A")(options "")(descr ""))
+  (lib (name "Seeed Studio XIAO Series Library")(type "KiCad")(uri "${KIPRJMOD}/Seeed Studio XIAO Series Library")(options "")(descr ""))
+  (lib (name "project-library")(type "KiCad")(uri "${KIPRJMOD}/project-library.pretty/")(options "")(descr ""))
+  (lib (name "SN74LVC125ANSR")(type "KiCad")(uri "${KIPRJMOD}/SN74LVC125ANSR.pretty/")(options "")(descr ""))
+  (lib (name "MS5611")(type "KiCad")(uri "${KIPRJMOD}/MS5611")(options "")(descr ""))
+)

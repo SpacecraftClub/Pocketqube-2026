@@ -1,0 +1,8 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "Pocket Qube Symbols")(type "KiCad")(uri "${KIPRJMOD}/Pocket Qube Symbols.kicad_sym")(options "")(descr ""))
+  (lib (name "project-library")(type "KiCad")(uri "${KIPRJMOD}/project-library.kicad_sym")(options "")(descr ""))
+  (lib (name "SN74LVC125ANSR")(type "KiCad")(uri "${KIPRJMOD}/SN74LVC125ANSR.kicad_sym")(options "")(descr ""))
+  (lib (name "LSM6DSOXTR")(type "KiCad")(uri "${KIPRJMOD}/LSM6DSOXTR.kicad_sym")(options "")(descr ""))
+  (lib (name "MMC5603NJ")(type "KiCad")(uri "${KIPRJMOD}/MMC5603NJ.kicad_sym")(options "")(descr ""))
+)

@@ -7875,6 +7875,22 @@
 		(layer "Edge.Cuts")
 		(uuid "836bb763-368a-4e0d-84e7-fa2ad6256ffb")
 	)
+	(segment
+		(start 151.945738 76.3)
+		(end 151.2432 75.597462)
+		(width 0.2)
+		(layer "F.Cu")
+		(net 6)
+		(uuid "20e1dc4f-4f54-4c63-8050-baf5e542b9c0")
+	)
+	(segment
+		(start 154.475 76.3)
+		(end 151.945738 76.3)
+		(width 0.5)
+		(layer "F.Cu")
+		(net 6)
+		(uuid "ecdc03ae-5b7d-4977-b16b-1db300c58fc5")
+	)
 	(zone
 		(net 0)
 		(net_name "")
@@ -7904,6 +7920,27 @@
 		(polygon
 			(pts
 				(xy 157.75 81.3) (xy 157.75 87.05) (xy 163.25 87.05) (xy 163.25 81.3)
+			)
+		)
+	)
+	(zone
+		(net 7)
+		(net_name "GND")
+		(layers "F.Cu" "B.Cu")
+		(uuid "eec9dabb-d251-4c2d-9658-2c85c62d6e99")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0.5)
+		)
+		(min_thickness 0.25)
+		(filled_areas_thickness no)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+		)
+		(polygon
+			(pts
+				(xy 133 71) (xy 170.5 71) (xy 170.5 109) (xy 133 109)
 			)
 		)
 	)

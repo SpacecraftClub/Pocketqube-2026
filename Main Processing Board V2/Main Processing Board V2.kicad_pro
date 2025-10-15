@@ -516,7 +516,7 @@
       "plot": "",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "../Main Processing Board V2.step",
       "svg": "",
       "vrml": ""
     },

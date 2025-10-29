@@ -513,7 +513,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "",
+      "plot": "CAM Data",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "../Main Processing Board V2.step",

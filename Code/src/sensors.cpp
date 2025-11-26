@@ -13,7 +13,7 @@
 class MMCModule {
     private:
     bool magflag = false;
-    Adafruit_MMC5603 mag = Adafruit_MMC5603(12345);
+    Adafruit_MMC5603 mag = Adafruit_MMC5603(0x30);
     float magnet_data[3];
     float degrees;
 
@@ -163,7 +163,7 @@ class LMSModule{
         static float result[7];
         result[0] = accel_data[0];
         result[1] = accel_data[1];
-        result[2] = accel_data[0];
+        result[2] = accel_data[2];
         result[3] = gyro_data[0];
         result[4] = gyro_data[1];
         result[5] = gyro_data[2];

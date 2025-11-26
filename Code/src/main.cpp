@@ -1,8 +1,8 @@
 #define DEBUG true
 
 #define POWER_MONITOR false
-#define SD_ENABLE true
-#define CAMERA_ENABLE true
+#define SD_ENABLE false
+#define CAMERA_ENABLE false
 #define OLD_BOARD false
 #define I2C_SENSORS true
 #define RADIO_ENABLE false
@@ -14,13 +14,10 @@
 #include <Arduino.h>
 #include <SD.h>
 #include "pinDefinitions.h"
-#include "camera.h"
 #include "dataLogger.h"
 #include "sensors.h"
 #include "powerMonitor.h"
 #include "radio.cpp"
-
-CameraManager camera;
 
 DataPersistance datalogger;
 
@@ -54,6 +51,7 @@ void setup() {
 
   #if DEBUG
     Serial.begin(9600);
+    delay(5000);
     Serial.println("\n\nStarting QubeSat");
   #endif
   pinMode(CAM_CS, OUTPUT);
@@ -74,13 +72,19 @@ void setup() {
   #endif
 
   #if I2C_SENSORS
-
-  // magneticSensor.init_mag();
-  
-  gyroAccelSensor.init_LSM6DOX();
-
-  atmosphericSensor.init_MS5611();
-
+  String msg;
+  msg = magneticSensor.init_mag();
+  #if DEBUG
+    Serial.println(msg);
+  #endif
+  msg = gyroAccelSensor.init_LSM6DOX();
+  #if DEBUG
+    Serial.println(msg);
+  #endif
+  msg = atmosphericSensor.init_MS5611();
+  #if DEBUG
+    Serial.println(msg);
+  #endif
   #endif
 
   #if POWER_MONITOR
@@ -129,12 +133,16 @@ void loop() {
       Serial.println("Updating CSV");
     #endif
     lastCSVUpdate = millis();
+    #if SD_ENABLE
     datalogger.addToCSV(lastPhotoTaken);
+    #endif
     if(lastPhotoTaken)
       lastPhotoTaken = 0;
   }
 
 }
+
+extern const char* columnLabels;
 
 void updateSensors(){
   static double dataIn[NUM_ITEMS_IN_CSV];
@@ -147,12 +155,12 @@ void updateSensors(){
   }
 
   #if I2C_SENSORS
-  // magneticSensor.tick();
-  // float* magneticData = magneticSensor.get_data();
-  // dataIn[MAGNETIC_X] = magneticData[0];
-  // dataIn[MAGNETIC_Y] = magneticData[1];
-  // dataIn[MAGNETIC_Z] = magneticData[2];
-  // dataIn[MAGNETIC_DEGREES] = magneticData[3];
+  magneticSensor.tick();
+  float* magneticData = magneticSensor.get_data();
+  dataIn[MAGNETIC_X] = magneticData[0];
+  dataIn[MAGNETIC_Y] = magneticData[1];
+  dataIn[MAGNETIC_Z] = magneticData[2];
+  dataIn[MAGNETIC_DEGREES] = magneticData[3];
 
   gyroAccelSensor.tick();
   float* gyroData = gyroAccelSensor.get_data();
@@ -181,11 +189,17 @@ void updateSensors(){
   
   #if SD_ENABLE
   datalogger.addData(dataIn);
-  #else
+  #endif
+  #if DEBUG
+  static bool printLabels = true;
+  if(printLabels){
+    Serial.println(columnLabels);
+    printLabels = false;
+  }
   for(int i = 0; i < NUM_ITEMS_IN_CSV; i++){
     Serial.print(dataIn[i]);
     Serial.print(',');
-    Serial.println();
   }
+  Serial.println();
   #endif
 }

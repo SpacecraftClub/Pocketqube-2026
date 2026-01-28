@@ -6,9 +6,13 @@
 // This demo was made for ArduCAM Spi Camera.
 // It needs to be used in combination with PC software.
 // It can test ArduCAM Spi Camerafunctions
+
+#define ENFORCE_UHD true
+
 #include "ArducamLink.h"
 #include "Arducam_Mega.h"
 #include "SPI.h"
+
 const int MEGA_CS = 7;
 Arducam_Mega myCAM(MEGA_CS);
 ArducamLink myUart;
@@ -76,7 +80,7 @@ void setup()
 }
 
 void loop()
-{
+{ 
     if (myUart.arducamUartAvailable()) {
         temp = myUart.arducamUartRead();
         delay(5);
@@ -93,35 +97,35 @@ void loop()
             commandLength = 0;
         }
         else if (temp == 'a') {
-            byte retVal = myCAM.takePicture(CAM_IMAGE_MODE_96X96, CAM_IMAGE_PIX_FMT_RGB565);
-            if(retVal != CAM_ERR_SUCCESS){
-                Serial.println("Error reading from camera!");
-            }
-            Serial.print("Image Len:");
-            Serial.println(myCAM.getTotalLength());
-            Serial.print("Received Len: ");
-            Serial.println(myCAM.getReceivedLength());
-            uint8_t buff[255];
-            uint32_t len_transmitted;
-            uint8_t lenRead = myCAM.readBuff(buff, 255);
-            Serial.println("Begin image transmission:");
-            while(lenRead > 0){
-                for(int i = 0; i < lenRead; i++){
-                    Serial.print("0x");
-                    Serial.print(buff[i], HEX);
-                    Serial.print(',');
-                }
-                len_transmitted += lenRead;
-                lenRead = myCAM.readBuff(buff, 255);
-                // Serial.println("\n\nEnd of line\n");
-                // Serial.print("Received Len: ");
-                // Serial.println(myCAM.getReceivedLength());
-            }
-            Serial.println("\nEnd of transmission");
-            Serial.print("TX len: ");
-            Serial.println(len_transmitted);
-            Serial.print("Len to read: ");
-            Serial.println(myCAM.getReceivedLength());
+            // byte retVal = myCAM.takePicture(CAM_IMAGE_MODE_96X96, CAM_IMAGE_PIX_FMT_RGB565);
+            // if(retVal != CAM_ERR_SUCCESS){
+            //     Serial.println("Error reading from camera!");
+            // }
+            // Serial.print("Image Len:");
+            // Serial.println(myCAM.getTotalLength());
+            // Serial.print("Received Len: ");
+            // Serial.println(myCAM.getReceivedLength());
+            // uint8_t buff[255];
+            // uint32_t len_transmitted;
+            // uint8_t lenRead = myCAM.readBuff(buff, 255);
+            // Serial.println("Begin image transmission:");
+            // while(lenRead > 0){
+            //     for(int i = 0; i < lenRead; i++){
+            //         Serial.print("0x");
+            //         Serial.print(buff[i], HEX);
+            //         Serial.print(',');
+            //     }
+            //     len_transmitted += lenRead;
+            //     lenRead = myCAM.readBuff(buff, 255);
+            //     // Serial.println("\n\nEnd of line\n");
+            //     // Serial.print("Received Len: ");
+            //     // Serial.println(myCAM.getReceivedLength());
+            // }
+            // Serial.println("\nEnd of transmission");
+            // Serial.print("TX len: ");
+            // Serial.println(len_transmitted);
+            // Serial.print("Len to read: ");
+            // Serial.println(myCAM.getReceivedLength());
         }
     }
     myCAM.captureThread();

@@ -113,7 +113,11 @@ uint8_t ArducamLink::uartCommandProcessing(Arducam_Mega* myCAM, uint8_t* command
     case SET_PICTURE_RESOLUTION: // Set Camera Resolution
         cameraResolution = commandBuff[1] & 0x0f;
         cameraFarmat = (commandBuff[1] & 0x70) >> 4;
+        #if ENFORCE_UHD
+        myCAM->takePicture(CAM_IMAGE_MODE_WQXGA2, (CAM_IMAGE_PIX_FMT)cameraFarmat);
+        #else
         myCAM->takePicture((CAM_IMAGE_MODE)cameraResolution, (CAM_IMAGE_PIX_FMT)cameraFarmat);
+        #endif
         break;
     case SET_VIDEO_RESOLUTION: // Set Video Resolution
         cameraResolution = commandBuff[1] & 0x0f;

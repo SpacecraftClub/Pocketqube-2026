@@ -14,25 +14,17 @@ typedef enum StatsOperation: uint8_t {
     STATS_OPERATION_INCOMPLETE = 0x80
 } StatsOperation;
 
-void testInclude();
+/*
+Sorts the data into a fresh array
+@param data the list to be sorted
+@param output the output list
+@param len the length of the arrays
+@returns if the operation succeeded or failed
+*/
+template<typename T>
+StatsOperation SortData(T* data, T* output, uint16_t len);
 
 /*
-Sorts the data into a fresh array
-@param data the list to be sorted
-@param output the output list
-@param len the length of the arrays
-@returns if the operation succeeded or failed
-*/
-StatsOperation SortData(float* data, float* output, uint16_t len);
-/*
-Sorts the data into a fresh array
-@param data the list to be sorted
-@param output the output list
-@param len the length of the arrays
-@returns if the operation succeeded or failed
-*/
-StatsOperation SortData(int32_t* data, int32_t* output, uint16_t len);
-/*
 Calculates the median for the data at hand
 @param data the array of data
 @param len the length of the array
@@ -40,16 +32,9 @@ Calculates the median for the data at hand
 @param shouldSortFirst "true" if the data is unsorted
 @returns if the operation succeeded or failed
 */
-StatsOperation FindMedian(float* data, uint16_t len, float* median, bool shouldSortFirst = true);
-/*
-Calculates the median for the data at hand
-@param data the array of data
-@param len the length of the array
-@param median the return value of the median
-@param shouldSortFirst "true" if the data is unsorted
-@returns if the operation succeeded or failed
-*/
-StatsOperation FindMedian(int32_t* data, uint16_t len, int32_t* median, bool shouldSortFirst = true);
+template<typename T>
+StatsOperation FindMedian(T* data, uint16_t len, T* median, bool shouldSortFirst = true);
+
 /*
 Calculates the desired quartile for the data at hand
 @param data the array of data
@@ -59,17 +44,9 @@ Calculates the desired quartile for the data at hand
 @param shouldSortFirst "true" if the data is unsorted
 @returns if the operation succeeded or failed
 */
-StatsOperation FindQuartile(float* data, uint16_t len, uint16_t quartileNumber, float* quartileValue, bool shouldSortFirst = true);
-/*
-Calculates the desired quartile for the data at hand
-@param data the array of data
-@param len the length of the array
-@param quartileNumber the desired quartile (1st, 2nd, 3rd)
-@param quartileValue the return value of the quartile
-@param shouldSortFirst "true" if the data is unsorted
-@returns if the operation succeeded or failed
-*/
-StatsOperation FindQuartile(int32_t* data, uint16_t len, uint16_t quartileNumber, int32_t* quartileValue, bool shouldSortFirst = true);
+template<typename T>
+StatsOperation FindQuartile(T* data, uint16_t len, uint16_t quartileNumber, T* quartileValue, bool shouldSortFirst = true);
+
 /*
 Calculates the Mean of the data (excluding outliers)
 @param data the array of data
@@ -79,15 +56,7 @@ Calculates the Mean of the data (excluding outliers)
 @param shouldSortFirst "true" if the data is unsorted
 @returns if the operation succeeded or failed
 */
-StatsOperation CalculateMean(float* data, uint16_t len, float* mean, bool highPrecision = false, bool shouldSortFirst = true);
-/*
-Calculates the Mean of the data (excluding outliers)
-@param data the array of data
-@param len the length of the array
-@param mean the mean of the data
-@param shouldSortFirst "true" if the data is unsorted
-@returns if the operation succeeded or failed
-*/
-StatsOperation CalculateMean(int32_t* data, uint16_t len, int32_t* mean, bool shouldSortFirst = true);
+template<typename T>
+StatsOperation CalculateMean(T* data, uint16_t len, T* mean, bool highPrecision = false, bool shouldSortFirst = true);
 
 #endif

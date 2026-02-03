@@ -47,6 +47,7 @@ TASK_RETURN_CODE_T setupMS5611(SENSOR_TASK* sensorContext){
         if(msSensor.begin() == true){
             msSensor.setOversampling(OSR_ULTRA_HIGH); // Can change to other settings
             msSensor.reset();
+            sensorContext->numDataSamples = 0;
             retVal = TASK_EXECUTION_OKAY;
         } else {
             retVal = TASK_EXECUTION_ERROR_HW;
@@ -87,13 +88,23 @@ TASK_RETURN_CODE_T tickMS5611(SENSOR_TASK* sensorContext, bool exportForCSV){
         //if we should prepare for the CSV
         if(exportForCSV){
             //Run stat. anlys. on data
-            StatsOperation operationReturnCode;
-            operationReturnCode = CalculateMean(data[0],sensorContext->numDataSamples,&dataCSV[0]);
-            operationReturnCode = (StatsOperation)(operationReturnCode | CalculateMean(data[1],sensorContext->numDataSamples,&dataCSV[1]));
+            StatsOperation operationReturnCode = STATS_OPERATION_OK;
+            if(sensorContext->numDataSamples > 2){
+                operationReturnCode = CalculateMean(data[0],sensorContext->numDataSamples,&dataCSV[0]);
+                operationReturnCode = (StatsOperation)(operationReturnCode | CalculateMean(data[1],sensorContext->numDataSamples,&dataCSV[1]));
+            } else if (sensorContext->numDataSamples == 2) {
+                dataCSV[0] = (data[0][0] + data[0][1])/2;
+                dataCSV[1] = (data[1][0] + data[1][1])/2;
+            } else if (sensorContext->numDataSamples != 0) {
+                dataCSV[0] = data[0][0];
+                dataCSV[1] = data[1][0];
+            }
             //Make sure we didn't hit an error in our stat. anlys.
             if(operationReturnCode != STATS_OPERATION_OK){
-                msSensor.getAddress();
+                Serial.print("Stats Error Code: ");
                 Serial.println(operationReturnCode);
+                Serial.print("Num Items: ");
+                Serial.println(sensorContext->numDataSamples);
                 retVal = TASK_STATS_SUBSYS_ERROR;
             } else{
                 retVal = TASK_EXECUTION_OKAY;

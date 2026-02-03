@@ -15,37 +15,19 @@
 #include <SD.h>
 #include "pinDefinitions.h"
 #include "dataLogger.h"
-#include "sensors.h"
 #include "powerMonitor.h"
-#include "radio.cpp"
+#include "taskHandles.h"
 
-DataPersistance datalogger;
+#define HAS_TASK_ELLAPSED(ms, lastExecution, period) ((((ms) - (lastExecution)) >= (period)) || ((lastExecution) > (ms)))
 
-MMCModule magneticSensor;
+extern SENSOR_TASK* sensorTasks[NUM_SENSOR_TASKS];
 
-LMSModule gyroAccelSensor;
-
-MS5611Module atmosphericSensor;
-
-PowerMonitor powerMonitor;
-
-#if RADIO_ENABLE
-RadioManager radioManager;
-#endif
-
-int lastPhotoTaken = 0;
-
-#define CAMERA_REFRESH_DELAY 10000
-unsigned long lastCameraRefresh = 0;
-
-#define CSV_UPATE_DELAY 10000
-unsigned long lastCSVUpdate = 0;
-
-#define SENSOR_REFRESH_DELAY 1000
-unsigned long lastSensorRefresh = 0;
-
-void updateSensors();
-void updateCamera();
+uint64_t lastSensorRun = 0;
+const uint32_t sensorPeriod_ms = 100;
+uint64_t lastCSVSave = 0;
+const uint32_t CSVSavePeriod = 1000;
+uint64_t lastPhotoTaken;
+const uint32_t photoShootPeriod = 5000;
 
 void setup() {
 
@@ -54,6 +36,7 @@ void setup() {
     delay(5000);
     Serial.println("\n\nStarting QubeSat");
   #endif
+  Wire.begin();
   pinMode(CAM_CS, OUTPUT);
   pinMode(RAD_CS, OUTPUT);
   pinMode(SD_CS, OUTPUT);
@@ -71,135 +54,41 @@ void setup() {
   datalogger.init();
   #endif
 
-  #if I2C_SENSORS
-  String msg;
-  msg = magneticSensor.init_mag();
-  #if DEBUG
-    Serial.println(msg);
-  #endif
-  msg = gyroAccelSensor.init_LSM6DOX();
-  #if DEBUG
-    Serial.println(msg);
-  #endif
-  msg = atmosphericSensor.init_MS5611();
-  #if DEBUG
-    Serial.println(msg);
-  #endif
-  #endif
-
-  #if POWER_MONITOR
-  powerMonitor.initSensors();
-  #endif
-
-  #if CAMERA_ENABLE
-  camera.setup(CAM_CS);
-  #endif
-
-  #if RADIO_ENABLE
-  radioManager.radio_init();
-  #endif
+  setupSensorTasks();
 
   #if DEBUG
-    Serial.println("\nQubeSat Initialized\n\n");
+  Serial.println("\nQubeSat Initialized\n\n");
   #endif
 }
 
 void loop() {
+  uint64_t currMillis = millis();
+  if(HAS_TASK_ELLAPSED(currMillis, lastCSVSave, CSVSavePeriod)){
+    lastCSVSave = currMillis;
+    lastSensorRun = currMillis;
+    runSensorTasks(true);
 
-  if(millis() - lastSensorRefresh >= SENSOR_REFRESH_DELAY || !lastSensorRefresh || millis() < lastSensorRefresh) {
     #if DEBUG
-      Serial.println("Refreshing Sensors");
-    #endif
-    lastSensorRefresh = millis();
-    updateSensors();
-  }
-
-  #if RADIO_ENABLE
-  radioManager.radio_loop();
-  #endif
-
-  #if CAMERA_ENABLE
-  if(millis() - lastCameraRefresh >= CAMERA_REFRESH_DELAY || millis() < lastCameraRefresh) {
-    #if DEBUG
-      Serial.println("Capturing Photo");
-    #endif
-    lastCameraRefresh = millis();
-    lastPhotoTaken = camera.takePicture();
-  }
-  #endif
-
-  if(millis() - lastCSVUpdate >= CSV_UPATE_DELAY || millis() < lastCSVUpdate){
-    #if DEBUG
-      Serial.println("Updating CSV");
-    #endif
-    lastCSVUpdate = millis();
-    #if SD_ENABLE
-    datalogger.addToCSV(lastPhotoTaken);
-    #endif
-    if(lastPhotoTaken)
-      lastPhotoTaken = 0;
-  }
-
-}
-
-extern const char* columnLabels;
-
-void updateSensors(){
-  static double dataIn[NUM_ITEMS_IN_CSV];
-  static bool firstTime = true;
-  if(firstTime){
-    for(int i = 0; i < NUM_ITEMS_IN_CSV; i++){
-      dataIn[i] = 0.0;
+    for(uint8_t sensor = 0; sensor < NUM_SENSOR_TASKS; sensor++){
+      for(uint8_t data = 0; data < sensorTasks[sensor]->numDataTypes; data++){
+        Serial.print(sensorTasks[sensor]->dataCSV[data]);
+        if(data != sensorTasks[sensor]->numDataTypes - 1){
+          Serial.print(',');
+        }
+      }
     }
-    firstTime = false;
+    Serial.println();
+    #endif
+
+    //TODO: run datalogger
+  } else if(HAS_TASK_ELLAPSED(currMillis, lastSensorRun, sensorPeriod_ms)){
+    lastSensorRun = currMillis;
+    runSensorTasks(false);
   }
+  currMillis = millis(); // make sure to update before checking camera since sensor reading can take a while
+  if(HAS_TASK_ELLAPSED(currMillis, lastPhotoTaken, photoShootPeriod)){
+    lastPhotoTaken = currMillis;
 
-  #if I2C_SENSORS
-  magneticSensor.tick();
-  float* magneticData = magneticSensor.get_data();
-  dataIn[MAGNETIC_X] = magneticData[0];
-  dataIn[MAGNETIC_Y] = magneticData[1];
-  dataIn[MAGNETIC_Z] = magneticData[2];
-  dataIn[MAGNETIC_DEGREES] = magneticData[3];
-
-  gyroAccelSensor.tick();
-  float* gyroData = gyroAccelSensor.get_data();
-  dataIn[ACCELERATION_X] = gyroData[0];
-  dataIn[ACCELERATION_Y] = gyroData[1];
-  dataIn[ACCELERATION_Z] = gyroData[2];
-  dataIn[GYRO_X] = gyroData[3];
-  dataIn[GYRO_Y] = gyroData[4];
-  dataIn[GYRO_Z] = gyroData[5];
-  dataIn[IMU_TEMP] = gyroData[6];
-
-  atmosphericSensor.tick();
-  float* atmosphericData = atmosphericSensor.get_data();
-  dataIn[PRESSURE] = atmosphericData[0];
-  dataIn[ATMOSPHERE_TEMP] = atmosphericData[1];
-  #endif
-
-  #if POWER_MONITOR
-  dataIn[SOLAR_CURRENT] = powerMonitor.readCurrent(SOLAR_SENSOR);
-  dataIn[SOLAR_VOLTS] = powerMonitor.readVoltage(SOLAR_SENSOR);
-  dataIn[SOLAR_POWER] = powerMonitor.readPower(SOLAR_SENSOR);
-  dataIn[BATTERY_CURRENT] = powerMonitor.readCurrent(BATTERY_SENSOR);
-  dataIn[BATTERY_VOLTS] = powerMonitor.readVoltage(BATTERY_SENSOR);
-  dataIn[BATTERY_POWER] =  powerMonitor.readPower(BATTERY_SENSOR);
-  #endif
+  }
   
-  #if SD_ENABLE
-  datalogger.addData(dataIn);
-  #endif
-  #if DEBUG
-  static bool printLabels = true;
-  if(printLabels){
-    Serial.println(columnLabels);
-    printLabels = false;
-  }
-  for(int i = 0; i < NUM_ITEMS_IN_CSV; i++){
-    Serial.print(dataIn[i]);
-    Serial.print(',');
-  }
-  Serial.println();
-  #endif
 }

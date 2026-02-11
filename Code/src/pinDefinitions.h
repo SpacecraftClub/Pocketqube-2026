@@ -8,7 +8,7 @@
 
 #define RAD_CS 3
 #define MS5611_I2C_ADDR 0x76
-
+#define MMC5603_I2C_ADDR 0x30
 
 
 

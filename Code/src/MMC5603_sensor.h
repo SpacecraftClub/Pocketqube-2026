@@ -10,14 +10,14 @@
 
 extern SENSOR_TASK MMC5603_Task;
 /*
-Sets up the context for the MS5611 task
+Sets up the context for the MMC5603 task
 @param sensorContext the sensor context
 @returns 0 if successfull
 */
 TASK_RETURN_CODE_T setupMMC5603(SENSOR_TASK* sensorContext);
 
 /*
-Gathers data from the MS5611 sensor
+Gathers data from the MMC5603 sensor
 @param sensorContext the sensor context
 @param exportForCSV Run statistical engine to eliminate 
 outliers and average data in preparation for data storage 

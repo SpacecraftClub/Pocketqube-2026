@@ -1,5 +1,6 @@
 #include "taskHandles.h"
 #include "MS5611.h"
+#include "MMC5603_sensor.h"
 #include <Arduino.h>
 
 const char* Task_Return_Code_Names[] = {
@@ -17,8 +18,11 @@ const char* Task_Return_Code_Names[] = {
 
 extern SENSOR_TASK MS5611_Task;
 
+extern SENSOR_TASK MMC5603_Task;
+
 SENSOR_TASK* sensorTasks[NUM_SENSOR_TASKS] = {
-    &MS5611_Task
+    &MS5611_Task,
+    &MMC5603_Task
 };
 
 void runSensorTask(SENSOR_TASK* taskPtr, bool exportForCSV){
@@ -43,7 +47,7 @@ void runSensorTasks(bool exportForCSV){
 void setupSensorTasks(){
     for(uint8_t sensor = 0; sensor < NUM_SENSOR_TASKS; sensor++){
         TASK_RETURN_CODE returnCode = sensorTasks[sensor]->setup(sensorTasks[sensor]);
-            if(returnCode != TASK_EXECUTION_OKAY){
+        if(returnCode != TASK_EXECUTION_OKAY){
             Serial.print("Failed to initialize Task ");
             Serial.print(sensorTasks[sensor]->taskName);
             Serial.print(", failed with error code: ");

@@ -1,11 +1,4 @@
-#define DEBUG true
-
-#define POWER_MONITOR false
-#define SD_ENABLE false
-#define CAMERA_ENABLE false
-#define OLD_BOARD false
-#define I2C_SENSORS true
-#define RADIO_ENABLE false
+#include "compileOptions.h"
 
 #if DEBUG
   #pragma message "Compiling in debug mode"
@@ -15,15 +8,20 @@
 #define PRINT_SENSOR_CSV false
 
 #include <Arduino.h>
-#include <SD.h>
+#include <SdFat.h>
+#include <SPI.h>
 #include "pinDefinitions.h"
-#include "dataLogger.h"
 #include "powerMonitor.h"
 #include "taskHandles.h"
+#include "camera.h"
 
 #define HAS_TASK_ELLAPSED(ms, lastExecution, period) ((((ms) - (lastExecution)) >= (period)) || ((lastExecution) > (ms)))
 
 extern SENSOR_TASK* sensorTasks[NUM_SENSOR_TASKS];
+
+extern CAMERA_TASK arducamMegaCameraContext;
+
+SdFs SD_CARD;
 
 uint64_t lastSensorRun = 0;
 const uint32_t sensorPeriod_ms = 100;
@@ -33,12 +31,12 @@ uint64_t lastPhotoTaken;
 const uint32_t photoShootPeriod = 5000;
 
 void setup() {
-
   #if DEBUG
     Serial.begin(9600);
     delay(5000);
     Serial.println("\n\nStarting QubeSat");
   #endif
+  SPI.begin();
   Wire.begin();
   pinMode(CAM_CS, OUTPUT);
   pinMode(RAD_CS, OUTPUT);
@@ -49,15 +47,30 @@ void setup() {
 
   //Initialize SD Card
   #if SD_ENABLE
-  while(!SD.begin(SD_CS)){
-    Serial.println("SD Card Error!");
-    delay(1000);
+  if(!SD_CARD.begin(SD_CONFIG)){
+    Serial.println("SD Card Failed to initialize!");
   }
-
-  datalogger.init();
+  #if FORMAT_SD_CARD
+  if(SD_CARD.format(&Serial)){
+    Serial.println("Reformatted the SD Card");
+  } else {
+    Serial.println("Failed to reformat the SD Card");
+  }
+  #endif
   #endif
 
   setupSensorTasks();
+
+  #if CAMERA_ENABLE
+  TASK_RETURN_CODE returnCode =  arducamMegaCameraContext.setup(&arducamMegaCameraContext);
+
+  if(returnCode != TASK_EXECUTION_OKAY){
+    Serial.print("Failed to initialize Task ");
+    Serial.print("[Camera]");
+    Serial.print(", failed with error code: ");
+    Serial.println(Task_Return_Code_Names[returnCode]);
+  }
+  #endif
 
   #if DEBUG
   Serial.println("\nQubeSat Initialized\n\n");
@@ -77,6 +90,20 @@ void loop() {
     runSensorTasks(true);
 
     #if (DEBUG & PRINT_SENSOR_CSV)
+    static bool havePrintedLabels = false;
+    if(!havePrintedLabels){
+      havePrintedLabels = true;
+      Serial.println();
+      for(uint8_t sensor = 0; sensor < NUM_SENSOR_TASKS; sensor++){
+        for(uint8_t data = 0; data < sensorTasks[sensor]->numDataTypes; data++){
+          Serial.print(sensorTasks[sensor]->dataNames[data]);
+          if(sensor != NUM_SENSOR_TASKS - 1 || data != sensorTasks[sensor]->numDataTypes - 1){
+            Serial.print(',');
+          }
+        }
+      }
+      Serial.println();
+    }
     for(uint8_t sensor = 0; sensor < NUM_SENSOR_TASKS; sensor++){
       for(uint8_t data = 0; data < sensorTasks[sensor]->numDataTypes; data++){
         Serial.print(sensorTasks[sensor]->dataCSV[data]);
@@ -101,12 +128,19 @@ void loop() {
     Serial.println(sensors_WCET);
   }
   #endif
-
+  #if CAMERA_ENABLE
   currMillis = millis(); // make sure to update before checking camera since sensor reading can take a while
   if(HAS_TASK_ELLAPSED(currMillis, lastPhotoTaken, photoShootPeriod)){
     lastPhotoTaken = currMillis;
-
+    TASK_RETURN_CODE returnCode = arducamMegaCameraContext.tick(&arducamMegaCameraContext);
+    if(returnCode != TASK_EXECUTION_OKAY){
+      Serial.print("Failed to tick Task ");
+      Serial.print("[Camera]");
+      Serial.print(", failed with error code: ");
+      Serial.println(Task_Return_Code_Names[returnCode]);
+    }
   }
+  #endif
   #if TEST_TIMING
   uint32_t cameraExecutionTime = millis() - currMillis;
   if(cameraExecutionTime > camera_WCET && millis() > currMillis){

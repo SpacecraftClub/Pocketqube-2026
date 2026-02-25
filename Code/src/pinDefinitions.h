@@ -1,5 +1,7 @@
 #ifndef PIN_DEFINITIONS_H
 #define PIN_DEFINITIONS_H
+#include <SdFat.h>
+
 
 //legacy board for prototyping
 #define BOARD_PRE_2025 false
@@ -13,7 +15,6 @@
 
 
 
-
 #if BOARD_PRE_2025
 #define SD_CS 7
 #define CAM_CS 2
@@ -21,5 +22,9 @@
 #define SD_CS 6
 #define CAM_CS 7
 #endif
+
+
+#define SD_CONFIG SdSpiConfig(SD_CS, SHARED_SPI, SD_SCK_MHZ(10))
+extern SdFs SD_CARD;
 
 #endif

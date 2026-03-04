@@ -24,7 +24,7 @@
 #endif
 
 
-#define SD_CONFIG SdSpiConfig(SD_CS, SHARED_SPI, SD_SCK_MHZ(10))
+#define SD_CONFIG SdSpiConfig(SD_CS, SHARED_SPI, SD_SCK_MHZ(5))
 extern SdFs SD_CARD;
 
 #endif

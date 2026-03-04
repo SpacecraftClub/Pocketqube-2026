@@ -107,9 +107,7 @@ void loop() {
     for(uint8_t sensor = 0; sensor < NUM_SENSOR_TASKS; sensor++){
       for(uint8_t data = 0; data < sensorTasks[sensor]->numDataTypes; data++){
         Serial.print(sensorTasks[sensor]->dataCSV[data]);
-        if(data != sensorTasks[sensor]->numDataTypes - 1){
-          Serial.print(',');
-        }
+        Serial.print(',');
       }
     }
     Serial.println();

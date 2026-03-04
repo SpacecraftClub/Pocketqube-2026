@@ -1,6 +1,7 @@
 #include "taskHandles.h"
 #include "MS5611.h"
 #include "MMC5603_sensor.h"
+#include "LSM6DSOX.h"
 #include <Arduino.h>
 
 const char* Task_Return_Code_Names[] = {
@@ -20,9 +21,12 @@ extern SENSOR_TASK MS5611_Task;
 
 extern SENSOR_TASK MMC5603_Task;
 
+extern SENSOR_TASK LMSModule_Task;
+
 SENSOR_TASK* sensorTasks[NUM_SENSOR_TASKS] = {
     &MS5611_Task,
-    &MMC5603_Task
+    &MMC5603_Task,
+    &LMSModule_Task
 };
 
 void runSensorTask(SENSOR_TASK* taskPtr, bool exportForCSV){

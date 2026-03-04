@@ -2,7 +2,7 @@
 #define TASK_HANDLES_H
 #include <stdint.h>
 
-#define NUM_SENSOR_TASKS 2
+#define NUM_SENSOR_TASKS 3
 
 #define DEFAULT_NUMBER_SAMPLE_VALUES 10
 

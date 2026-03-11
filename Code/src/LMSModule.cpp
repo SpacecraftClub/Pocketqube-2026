@@ -1,5 +1,6 @@
 #include "LMSModule.h"
 #include <LSM6DSOX.h>
+#include "compileOptions.h"
 #include <stats.h>
 
 /*
@@ -124,6 +125,7 @@ TASK_RETURN_CODE_T tickLMS(SENSOR_TASK* sensorContext, bool exportForCSV) {
             }
             //Make sure we didn't hit an error in our stat. anlys.
             if(operationReturnCode != STATS_OPERATION_OK){
+                #if DEBUG
                 Serial.print("Stats Error Code: ");
                 Serial.println(operationReturnCode);
                 Serial.print("Num Items: ");
@@ -139,6 +141,7 @@ TASK_RETURN_CODE_T tickLMS(SENSOR_TASK* sensorContext, bool exportForCSV) {
                     Serial.println();
                 }
                 retVal = TASK_STATS_SUBSYS_ERROR;
+                #endif
             } else{
                 retVal = TASK_EXECUTION_OKAY;
             }

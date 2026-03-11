@@ -226,7 +226,7 @@ StatsOperation CalculateMean(T* data, uint16_t len, T* mean, bool highPrecision,
             uint16_t numItems = 0;
             for(int i = 0; i < len; i++){
                 T currData = sortedData[i];
-                if((AccumType) currData > outlierLowerBound && (AccumType) currData < outlierUpperBound){
+                if((AccumType) currData >= outlierLowerBound && (AccumType) currData <= outlierUpperBound){
                     result += currData;
                     numItems++;
                 }

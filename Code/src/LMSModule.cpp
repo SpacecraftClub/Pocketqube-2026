@@ -128,6 +128,16 @@ TASK_RETURN_CODE_T tickLMS(SENSOR_TASK* sensorContext, bool exportForCSV) {
                 Serial.println(operationReturnCode);
                 Serial.print("Num Items: ");
                 Serial.println(sensorContext->numDataSamples);
+                for(uint8_t dataType = 0; dataType < sensorContext->numDataTypes; dataType++){
+                    Serial.print('\t');
+                    Serial.print(sensorContext->dataNames[dataType]);
+                    Serial.print(": ");
+                    for(uint8_t sampleNum = 0; sampleNum < sensorContext->numDataSamples; sampleNum++){
+                        Serial.print(data[dataType][sampleNum]);
+                        Serial.print(",");
+                    }
+                    Serial.println();
+                }
                 retVal = TASK_STATS_SUBSYS_ERROR;
             } else{
                 retVal = TASK_EXECUTION_OKAY;

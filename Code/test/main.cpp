@@ -20,6 +20,28 @@ static int32_t int_buff_10[10];
 static float float_buff_9[9];
 static float float_buff_10[10];
 
+
+/*
+Sensor Data that causes Crash 3-10-26
+        accel_x: 0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,
+        accel_y: -0.04,-0.04,-0.04,-0.04,-0.04,-0.03,-0.04,-0.04,-0.04,
+        accel_z: 1.03,1.03,1.04,1.03,1.04,1.03,1.03,1.04,1.03,
+        gyro_x: -0.43,-0.43,-0.43,-0.43,-0.43,-0.43,-0.37,-0.43,-0.43,
+        gyro_y: 0.18,0.12,0.12,0.12,0.12,0.18,0.18,0.18,0.12,
+        gyro_z: -0.55,-0.55,-0.55,-0.55,-0.55,-0.55,-0.55,-0.55,-0.55,
+        temp_LMS: 22.00,22.00,22.00,22.00,22.00,22.00,22.00,22.00,22.00,
+*/
+
+static float rawData[7][9] = {
+    {0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02},
+    {-0.04,-0.04,-0.04,-0.04,-0.04,-0.03,-0.04,-0.04,-0.04},
+    {1.03,1.03,1.04,1.03,1.04,1.03,1.03,1.04,1.03},
+    {-0.43,-0.43,-0.43,-0.43,-0.43,-0.43,-0.37,-0.43,-0.43},
+    {0.18,0.12,0.12,0.12,0.12,0.18,0.18,0.18,0.12},
+    {-0.55,-0.55,-0.55,-0.55,-0.55,-0.55,-0.55,-0.55,-0.55},
+    {22.00,22.00,22.00,22.00,22.00,22.00,22.00,22.00,22.00}
+};
+
 void setUp(void) {
   // set stuff up here
 }
@@ -505,6 +527,17 @@ void test_mean_int32_overflow(void){
     TEST_ASSERT_EQUAL((int32_t) 0x7FFFFFFE, mean);
 }
 
+void test_raw_data(void){
+    float mean;
+    char outMsg[64];
+    for(uint8_t dataType = 0; dataType < 7; dataType++){
+        StatsOperation retVal = CalculateMean((float *) rawData[dataType], 9, &mean, false,  true);
+        snprintf(outMsg, 64, "Data set %d returned non-OK message", dataType);
+        TEST_ASSERT_EQUAL_MESSAGE(STATS_OPERATION_OK, retVal, outMsg);
+    }
+}
+
+
 int runUnityTests(void) {
   UNITY_BEGIN();
   RUN_TEST(test_function_int_median_odd_no_sort);
@@ -564,6 +597,8 @@ int runUnityTests(void) {
   RUN_TEST(test_q3_int32_overflow);
   RUN_TEST(test_median_int32_overflow);
   RUN_TEST(test_mean_int32_overflow);
+
+  RUN_TEST(test_raw_data);
   return UNITY_END();
 }
 

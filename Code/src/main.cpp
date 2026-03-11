@@ -5,7 +5,7 @@
 #endif
 
 #define TEST_TIMING true
-#define PRINT_SENSOR_CSV false
+#define PRINT_SENSOR_CSV true
 
 #include <Arduino.h>
 #include <SdFat.h>

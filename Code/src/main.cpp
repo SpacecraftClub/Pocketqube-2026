@@ -5,7 +5,7 @@
 #endif
 
 #define TEST_TIMING true
-#define PRINT_SENSOR_CSV true
+#define PRINT_SENSOR_CSV false
 
 #include <Arduino.h>
 #include <SdFat.h>
@@ -14,6 +14,7 @@
 #include "powerMonitor.h"
 #include "taskHandles.h"
 #include "camera.h"
+#include "sensor_logger.h"
 
 #define HAS_TASK_ELLAPSED(ms, lastExecution, period) ((((ms) - (lastExecution)) >= (period)) || ((lastExecution) > (ms)))
 
@@ -28,7 +29,7 @@ const uint32_t sensorPeriod_ms = 100;
 uint64_t lastCSVSave = 0;
 const uint32_t CSVSavePeriod = 1000;
 uint64_t lastPhotoTaken;
-const uint32_t photoShootPeriod = 5000;
+const uint32_t photoShootPeriod = 15000;
 
 void setup() {
   #if DEBUG
@@ -60,6 +61,8 @@ void setup() {
   #endif
 
   setupSensorTasks();
+  runSensorTasks(true); // make sure they are up to speed
+  lastCSVSave = millis() + CSVSavePeriod / 2;
 
   #if CAMERA_ENABLE
   TASK_RETURN_CODE returnCode =  arducamMegaCameraContext.setup(&arducamMegaCameraContext);
@@ -71,6 +74,8 @@ void setup() {
     Serial.println(Task_Return_Code_Names[returnCode]);
   }
   #endif
+
+  initializeLogger(sensorTasks, &arducamMegaCameraContext);
 
   #if DEBUG
   Serial.println("\nQubeSat Initialized\n\n");
@@ -88,6 +93,8 @@ void loop() {
     lastCSVSave = currMillis;
     lastSensorRun = currMillis;
     runSensorTasks(true);
+
+    logNewData();
 
     #if (DEBUG & PRINT_SENSOR_CSV)
     static bool havePrintedLabels = false;

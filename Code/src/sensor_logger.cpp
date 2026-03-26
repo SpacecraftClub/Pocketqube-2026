@@ -1,11 +1,13 @@
 #include "sensor_logger.h"
 #include <SdFat.h>
+#include <Arduino.h>
+#include "compileOptions.h"
 extern SdFs SD_CARD;
 
-static SENSOR_TASK* sensorTasksPtr;
+static SENSOR_TASK** sensorTasksPtr;
 static CAMERA_TASK* cameraTaskPtr;
 
-TASK_RETURN_CODE_T initializeLogger(SENSOR_TASK* sensorTasks, CAMERA_TASK* cameraTask) {
+TASK_RETURN_CODE_T initializeLogger(SENSOR_TASK** sensorTasks, CAMERA_TASK* cameraTask) {
     TASK_RETURN_CODE_T retVal = TASK_EXECUTION_INCOMPLETE;
     sensorTasksPtr = sensorTasks;
     cameraTaskPtr = cameraTask;
@@ -54,6 +56,9 @@ TASK_RETURN_CODE_T logNewData() {
     FsFile CSV = SD_CARD.open(PATH_TO_LOG + fileNumber + ".csv", FILE_WRITE);
 
     if(writeHeader) {
+        #if DEBUG
+            Serial.println("Creating Header");
+        #endif
         for(uint8_t sensor = 0; sensor < NUM_SENSOR_TASKS; sensor++){
             for(uint8_t data = 0; data < sensorTasks[sensor]->numDataTypes; data++){
                 CSV.print(sensorTasks[sensor]->dataNames[data]);
@@ -72,12 +77,14 @@ TASK_RETURN_CODE_T logNewData() {
         }
     }
 
-    if(cameraTaskPtr->lastPhotoTaken != -1) {
+    if(cameraTaskPtr->lastPhotoTaken != 0) {
         CSV.print(cameraTaskPtr->lastPhotoTaken);
-        cameraTaskPtr->lastPhotoTaken = -1;
+        cameraTaskPtr->lastPhotoTaken = 0;
     }
 
     CSV.println();
+
+    CSV.close();
 
     return retVal;
 }

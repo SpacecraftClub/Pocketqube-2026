@@ -14,7 +14,7 @@ Initialize SD Card logger creating file paths as necessary
 @param sensorTasks tasks to log
 @returns status of the operation
 */
-TASK_RETURN_CODE_T initializeLogger(SENSOR_TASK* sensorTasks, CAMERA_TASK* cameraTask);
+TASK_RETURN_CODE_T initializeLogger(SENSOR_TASK** sensorTasks, CAMERA_TASK* cameraTask);
 
 TASK_RETURN_CODE_T logNewData();
 

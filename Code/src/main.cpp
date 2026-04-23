@@ -15,6 +15,7 @@
 #include "taskHandles.h"
 #include "camera.h"
 #include "sensor_logger.h"
+#include "radio.h"
 
 #define HAS_TASK_ELLAPSED(ms, lastExecution, period) ((((ms) - (lastExecution)) >= (period)) || ((lastExecution) > (ms)))
 
@@ -28,6 +29,8 @@ uint64_t lastSensorRun = 0;
 const uint32_t sensorPeriod_ms = 100;
 uint64_t lastCSVSave = 0;
 const uint32_t CSVSavePeriod = 1000;
+uint64_t lastRadioTx = 0;
+const uint32_t radioPeriod_ms = 5000;
 uint64_t lastPhotoTaken;
 const uint32_t photoShootPeriod = 15000;
 
@@ -77,6 +80,18 @@ void setup() {
 
   initializeLogger(sensorTasks, &arducamMegaCameraContext);
 
+  #if RADIO_ENABLE
+  TASK_RETURN_CODE radioReturnCode = initRadio(sensorTasks, NUM_SENSOR_TASKS);
+  if(radioReturnCode != TASK_EXECUTION_OKAY){
+    Serial.print("Failed to initialize Task ");
+    Serial.print("[Radio]");
+    Serial.print(", failed with error code: ");
+    Serial.println(Task_Return_Code_Names[radioReturnCode]);
+  } else {
+    lastRadioTx = millis() + radioPeriod_ms / 2;
+  }
+  #endif
+
   #if DEBUG
   Serial.println("\nQubeSat Initialized\n\n");
   #endif
@@ -120,11 +135,23 @@ void loop() {
     Serial.println();
     #endif
 
-    //TODO: run datalogger
   } else if(HAS_TASK_ELLAPSED(currMillis, lastSensorRun, sensorPeriod_ms)){
     lastSensorRun = currMillis;
     runSensorTasks(false);
   }
+  #if RADIO_ENABLE
+  uint64_t radioMillis = millis();
+  if(HAS_TASK_ELLAPSED(radioMillis, lastRadioTx, radioPeriod_ms)){
+    lastRadioTx = radioMillis;
+    TASK_RETURN_CODE radioReturnCode = transmitTelemetry();
+    if(radioReturnCode != TASK_EXECUTION_OKAY){
+      Serial.print("Failed to tick Task ");
+      Serial.print("[Radio]");
+      Serial.print(", failed with error code: ");
+      Serial.println(Task_Return_Code_Names[radioReturnCode]);
+    }
+  }
+  #endif
   #if TEST_TIMING
   uint32_t sensorExecutionTime = millis() - currMillis;
   if(sensorExecutionTime > sensors_WCET && millis() > currMillis){

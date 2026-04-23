@@ -10,6 +10,6 @@
 #define CAMERA_ENABLE true
 #define OLD_BOARD false
 #define I2C_SENSORS true
-#define RADIO_ENABLE false
+#define RADIO_ENABLE true
 
 #endif

@@ -26,7 +26,8 @@ TASK_RETURN_CODE_T initRadio(SENSOR_TASK** tasks, uint8_t numTasks) {
     digitalWrite(RAD_EN, LOW);
 
     // freq(MHz), bw(kHz), sf, cr, syncWord, power(dBm), preamble, gain
-    int16_t state = radio.begin(915.0, 125.0, 12, 7, 0x12, 15, 8, 0);
+    int16_t state = radio.begin(915.0, 125.0, 7, 5, 0x12, 15, 8, 0);
+
     if (state != RADIOLIB_ERR_NONE) {
         #if DEBUG
         Serial.print("Radio init failed, code: ");

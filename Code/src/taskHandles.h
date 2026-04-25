@@ -1,13 +1,8 @@
 #ifndef TASK_HANDLES_H
 #define TASK_HANDLES_H
 #include <stdint.h>
-#include "compileOptions.h"
 
-#if POWER_MONITOR
-    #define NUM_SENSOR_TASKS 4
-#else
-    #define NUM_SENSOR_TASKS 3
-#endif
+#define NUM_SENSOR_TASKS 3
 
 #define DEFAULT_NUMBER_SAMPLE_VALUES 10
 

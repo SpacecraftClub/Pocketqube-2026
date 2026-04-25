@@ -10,8 +10,8 @@
 #include <Arduino.h>
 #include <SdFat.h>
 #include <SPI.h>
+#include <Wire.h>
 #include "pinDefinitions.h"
-#include "powerMonitor.h"
 #include "taskHandles.h"
 #include "camera.h"
 #include "sensor_logger.h"
